@@ -1,5 +1,7 @@
 # Cafe Sales Data Cleaner
 
+![Tests](https://github.com/Aminesbaillo/cafe-sales-cleaner/actions/workflows/tests.yml/badge.svg)
+
 ## Project Overview
 Cafe Sales Data Cleaner is a Python tool that takes a dirty cafe sales CSV, cleans it automatically, and exports a cleaned CSV plus a markdown report summarizing the data quality issues found and the fixes applied.
 
