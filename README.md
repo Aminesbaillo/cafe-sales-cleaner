@@ -1,52 +1,148 @@
-# Cafe Sales Data Cleaner
-
 ![Tests](https://github.com/Aminesbaillo/cafe-sales-cleaner/actions/workflows/tests.yml/badge.svg)
 
-## Project Overview
-Cafe Sales Data Cleaner is a Python tool that takes a dirty cafe sales CSV, cleans it automatically, and exports a cleaned CSV plus a markdown report summarizing the data quality issues found and the fixes applied.
+# Cafe Sales Data Cleaner
+
+> A lightweight, extensible Python pipeline that automatically detects, audits, and cleans dirty CSV data  and generates a human-readable report of every fix applied.
+
+---
+
+## The Problem
+
+Raw sales data is rarely clean. It arrives with invalid placeholders like `ERROR` and `UNKNOWN`, missing values, inconsistent formatting, and broken numeric fields. Cleaning this manually is slow, error-prone, and not reproducible.
+
+---
+
+## The Solution
+
+This pipeline automatically:
+- Detects the type of each column (numeric, categorical, date, id)
+- Audits each column for problems based on its type
+- Cleans each column using type-specific rules
+- Recalculates derived columns when possible (e.g. Total Spent = Quantity  Price)
+- Exports a cleaned CSV ready for analysis
+- Generates a markdown report summarizing every problem found and every fix applied
+
+No hardcoded column names. No manual rules per dataset. Add a new CSV and it just works.
+
+---
 
 ## Project Structure
-```text
 cafe-sales-cleaner/
+ .github/workflows/
+    tests.yml           # Runs tests automatically on every push
  data/
-    raw/              # Original dirty CSV
-    cleaned/          # Exported cleaned CSV
+    raw/                # Place your dirty CSV here
+    cleaned/            # Cleaned CSV is exported here
  notebooks/
-    explore.ipynb     # Data exploration notebook
+    explore.ipynb       # Data exploration notebook
  reports/
-    cleaning_report.md
+    cleaning_report.md  # Auto-generated cleaning report
  src/
-    loader.py         # Load raw CSV
-    detector.py       # Infer column types
-    auditor.py        # Find problems per column
-    cleaner.py        # Fix problems per column
-    pipeline.py       # Orchestrates all steps
-    report_generator.py
- main.py
+    loader.py           # Loads any CSV as raw strings
+    detector.py         # Infers column types automatically
+    auditor.py          # Finds problems per column type
+    cleaner.py          # Fixes problems per column type
+    pipeline.py         # Orchestrates all steps with logging
+    report_generator.py # Writes the markdown report
+ tests/
+    test_detector.py
+    test_auditor.py
+    test_cleaner.py
+ main.py                 # CLI entry point
  requirements.txt
  README.md
-```
+
+---
 
 ## How It Works
-- Load: Read the raw cafe sales CSV from the `data/raw/` directory.
-- Detect: Infer column types so each field can be processed correctly.
-- Audit: Identify data quality issues for each column before cleaning.
-- Clean & Export: Apply cleaning rules, export the cleaned CSV, and generate the markdown report.
+
+The pipeline runs in 6 steps:
+
+**1. Load**  reads the raw CSV, standardizes column names to lowercase with underscores.
+
+**2. Detect**  inspects each column and infers its type:
+- `id`  column name contains "id"
+- `date`  column name contains "date" or values parse as dates
+- `numeric`  80%+ of non-null values are numbers
+- `categorical`  low cardinality relative to row count
+- `text`  everything else
+
+**3. Audit**  scans each column for problems based on its detected type:
+- counts nulls and invalid placeholders (ERROR, UNKNOWN)
+- checks numeric columns for non-numeric values
+- checks date columns for unparseable values
+- lists unique valid values for categorical columns
+
+**4. Clean**  fixes each column based on its detected type:
+- replaces ERROR and UNKNOWN with NaN
+- converts numeric columns to float
+- parses date columns to datetime
+- strips whitespace from all string columns
+
+**5. Recalculate**  recovers derived columns when possible (configurable via main.py).
+
+**6. Export**  saves the cleaned CSV and generates a markdown report.
+
+---
 
 ## Quickstart
 ```bash
-git clone <repository-url>
+# Clone the repo
+git clone https://github.com/Aminesbaillo/cafe-sales-cleaner.git
 cd cafe-sales-cleaner
+
+# Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\Activate.ps1  # Windows
+source venv/bin/activate    # Mac/Linux
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the pipeline
 python main.py
 ```
 
+Or with custom paths:
+```bash
+python main.py --input data/raw/your_file.csv --output data/cleaned/out.csv --report reports/report.md
+```
+
+---
+
 ## Output
-Running the pipeline produces a cleaned CSV in `data/cleaned/` and a markdown summary report at `reports/cleaning_report.md`. The report captures detected column types, audit findings, and a per-column cleaning summary.
+
+| File | Description |
+|------|-------------|
+| `data/cleaned/cleaned_cafe_sales.csv` | Fully cleaned dataset ready for analysis |
+| `reports/cleaning_report.md` | Human-readable report of all problems found and fixes applied |
+
+---
+
+## How To Expand It
+
+The pipeline is designed to be extended without touching existing logic:
+
+| Goal | What to change |
+|------|---------------|
+| Support a new column type | Add detection in `detector.py`, audit logic in `auditor.py`, cleaning logic in `cleaner.py` |
+| Support a new invalid placeholder | Add it to `INVALID_PLACEHOLDERS` in `detector.py` and `cleaner.py` |
+| Add a new derived column rule | Add an entry to `derived_columns` in `main.py` |
+| Clean a different CSV | Pass `--input your_file.csv`  no code changes needed |
+| Add more date formats | Add the format string to `COMMON_DATE_FORMATS` in `detector.py` |
+
+---
 
 ## Tech Stack
-- Python 3.11
+
+- Python 3.12
 - pandas
 - numpy
+- pytest
+- GitHub Actions
+
+---
+
+## Dataset
+
+The raw dataset used is the [Dirty Cafe Sales CSV](data/raw/dirty_cafe_sales.csv)  a synthetic dataset with intentional data quality issues including missing values, invalid placeholders, and inconsistent formatting.
