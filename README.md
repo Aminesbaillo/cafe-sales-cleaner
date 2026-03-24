@@ -26,34 +26,6 @@ No hardcoded column names. No manual rules per dataset. Add a new CSV and it jus
 
 ---
 
-## Project Structure
-cafe-sales-cleaner/
- .github/workflows/
-    tests.yml           # Runs tests automatically on every push
- data/
-    raw/                # Place your dirty CSV here
-    cleaned/            # Cleaned CSV is exported here
- notebooks/
-    explore.ipynb       # Data exploration notebook
- reports/
-    cleaning_report.md  # Auto-generated cleaning report
- src/
-    loader.py           # Loads any CSV as raw strings
-    detector.py         # Infers column types automatically
-    auditor.py          # Finds problems per column type
-    cleaner.py          # Fixes problems per column type
-    pipeline.py         # Orchestrates all steps with logging
-    report_generator.py # Writes the markdown report
- tests/
-    test_detector.py
-    test_auditor.py
-    test_cleaner.py
- main.py                 # CLI entry point
- requirements.txt
- README.md
-
----
-
 ## How It Works
 
 The pipeline runs in 6 steps:
