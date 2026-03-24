@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+src/.ipynb_checkpoints/
+
+# Data - raw input and outputs stay local
+data/cleaned/
+reports/
+
+# OS
+.DS_Store
+Thumbs.db
